@@ -16,14 +16,15 @@ jobs:
     strategy:
       matrix:
         python: [3.11]
-
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-      - name: Install Tox and any other packages
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install all packages
         run: poetry install
       - name: Run Tox
         run: poetry run tox
