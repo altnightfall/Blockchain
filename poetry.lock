@@ -386,6 +386,16 @@ files = [
 ]
 
 [[package]]
+name = "starkbank-ecdsa"
+version = "2.2.0"
+description = "A lightweight and fast pure python ECDSA library"
+optional = false
+python-versions = "*"
+files = [
+    {file = "starkbank-ecdsa-2.2.0.tar.gz", hash = "sha256:9399c3371b899d4a235b68a1ed7919d202fbf024bd2c863ae8ebdad343c2a63a"},
+]
+
+[[package]]
 name = "starlette"
 version = "0.27.0"
 description = "The little ASGI library that shines."
@@ -427,6 +437,16 @@ virtualenv = ">=20.24.3"
 [package.extras]
 docs = ["furo (>=2023.8.19)", "sphinx (>=7.2.4)", "sphinx-argparse-cli (>=1.11.1)", "sphinx-autodoc-typehints (>=1.24)", "sphinx-copybutton (>=0.5.2)", "sphinx-inline-tabs (>=2023.4.21)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
 testing = ["build[virtualenv] (>=0.10)", "covdefaults (>=2.3)", "detect-test-pollution (>=1.1.1)", "devpi-process (>=1)", "diff-cover (>=7.7)", "distlib (>=0.3.7)", "flaky (>=3.7)", "hatch-vcs (>=0.3)", "hatchling (>=1.18)", "psutil (>=5.9.5)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)", "pytest-xdist (>=3.3.1)", "re-assert (>=1.1)", "time-machine (>=2.12)", "wheel (>=0.41.2)"]
+
+[[package]]
+name = "type-enforced"
+version = "0.0.16"
+description = "A type enforcer for python type annotations"
+optional = false
+python-versions = ">=3.7, <4"
+files = [
+    {file = "type_enforced-0.0.16.tar.gz", hash = "sha256:9736aa3bd335025759e0594955911fe7548ab9cd0424274e368197abac450682"},
+]
 
 [[package]]
 name = "typing-extensions"
@@ -480,4 +500,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "609eca11253a7f73e6bc1a59860950b3bc770c39bb4020264c49b02b38ddb3a4"
+content-hash = "72e5a50a7cd85201d621d0df103eb52d10b08f387dbf481bb1fc901ad1ca67f6"
