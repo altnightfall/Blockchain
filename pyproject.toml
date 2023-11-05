@@ -10,6 +10,7 @@ packages = [{include = "blockchain"}]
 python = "^3.11"
 fastapi = "^0.104.1"
 uvicorn = {extras = ["standart"], version = "^0.23.2"}
+starkbank-ecdsa = "^2.2.0"
 
 [tool.poetry.group.test.dependencies]
 tox = "^4.11.3"
