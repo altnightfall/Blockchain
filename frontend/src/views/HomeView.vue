@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
+    <img alt="Bitkoin logo" src="../assets/logo.png">
     <HelloWorld/>
   </div>
 </template>
@@ -13,6 +13,6 @@ export default {
   name: 'HomeView',
   components: {
     HelloWorld,
-  }
+  },
 }
 </script>

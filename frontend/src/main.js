@@ -12,3 +12,5 @@ axios.defaults.baseURL = 'http://localhost:5000/';  // the FastAPI backend
 
 app.use(router);
 app.mount("#app");
+
+import 'bootstrap';
