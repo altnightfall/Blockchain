@@ -5,7 +5,7 @@ Bitko In
 ```
 pip install poetry
 poetry install
-poetry run uvicorn blockchain.main:app --reload --host 127.0.0.1 --port 5000
+poetry run uvicorn backend.main:app --reload --host 127.0.0.1 --port 5000
 ```
 ## Frontend
 ```
