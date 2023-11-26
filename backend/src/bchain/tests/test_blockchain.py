@@ -1,5 +1,5 @@
 import pytest
-import blockchain.src.bchain
+import backend.src.bchain
 
 class TestBlock():
     def test_t(self):

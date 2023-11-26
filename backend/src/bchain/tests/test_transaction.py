@@ -1,6 +1,6 @@
 import pytest
 from ellipticcurve import PrivateKey, PublicKey
-from blockchain.src.bchain.transaction import Address, Transaction, TTypes
+from backend.src.bchain.transaction import Address, Transaction, TTypes
 
 class TestAddress():
     def test_badAddress(self):

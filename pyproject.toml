@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "blockchain"
+name = "backend"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-packages = [{include = "blockchain"}]
+packages = [{include = "backend"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -12,11 +12,25 @@ fastapi = "^0.104.1"
 uvicorn = {extras = ["standart"], version = "^0.23.2"}
 starkbank-ecdsa = "^2.2.0"
 type-enforced = "^0.0.16"
+tortoise = "^0.1.1"
+passlib = "^1.7.4"
+aerich = "^0.7.2"
+asyncpg = "^0.29.0"
+bcrypt = "^4.0.1"
+tortoise-orm = "^0.20.0"
+python-jose = "^3.3.0"
+python-multipart = "^0.0.6"
 
 [tool.poetry.group.test.dependencies]
 tox = "^4.11.3"
 pytest = "^7.4.3"
 
+
+
+[tool.aerich]
+tortoise_orm = "backend.src.database.config.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
