@@ -36,7 +36,7 @@
         User.append('username', this.form.username);
         User.append('password', this.form.password);
         await this.logIn(User);
-        this.$router.push('/dashboard');
+        this.$router.push('/profile');
       }
     }
   });

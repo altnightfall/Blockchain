@@ -1,5 +1,5 @@
 TORTOISE_ORM = {
-    "connections": {"default": "sqlite:///backend/src/database/users.db"},
+    "connections": {"default": "postgres://postgres:postgres@localhost:5432/blockchain"},
     "apps": {
         "models": {
             "models": [

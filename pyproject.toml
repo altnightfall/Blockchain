@@ -26,6 +26,11 @@ tox = "^4.11.3"
 pytest = "^7.4.3"
 
 
+
+[tool.aerich]
+tortoise_orm = "backend.src.database.config.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

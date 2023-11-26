@@ -39,7 +39,7 @@
       async submit() {
         try {
           await this.register(this.user);
-          this.$router.push('/dashboard');
+          this.$router.push('/profile');
         } catch (error) {
           throw 'Username already exists. Please try again.';
         }

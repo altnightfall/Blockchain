@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import backend.src.bchain
 from tortoise import Tortoise
 
-from backend.src.database.regitster import register_tortoise
+from backend.src.database.register import register_tortoise
 from backend.src.database.config import TORTOISE_ORM
+
 
 Tortoise.init_models(["backend.src.database.models"], "models")
 
