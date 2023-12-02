@@ -1,6 +1,11 @@
 import pytest
 from ellipticcurve import PrivateKey, PublicKey
 from backend.src.bchain.transaction import Address, Transaction, TTypes
+from backend.src.bchain.constants import Constants
+
+class TestConstants():
+    def test_creationReward(self):
+        assert Constants.CreationReward() == 100
 
 class TestAddress():
     def test_badAddress(self):
@@ -43,8 +48,22 @@ class TestTransaction():
 
         with pytest.raises(Exception):
             Transaction(TTypes.transfer, self.addrFrom, self.addrTo, self.pkeyTo, 100, 1, self.ckeyFrom)
+        
+        with pytest.raises(Exception):
+            Transaction(TTypes.transfer, None, self.addrTo, self.pkeyTo, 100, 0, self.ckeyFrom)
+        
+        with pytest.raises(Exception):
+            Transaction(TTypes.creationReward, None, self.addrTo, self.pkeyTo, 99999999999, 0, self.ckeyFrom)
+        
+        with pytest.raises(Exception):
+            Transaction(TTypes.creationReward, self.addrFrom, self.addrTo, self.pkeyTo, Constants.CreationReward(), 0, self.ckeyFrom)
+        
+        with pytest.raises(Exception):
+            Transaction(TTypes.fee, self.addrFrom, self.addrTo, self.pkeyTo, 0, 0, self.ckeyFrom)
 
-        Transaction(TTypes.transfer, self.addrFrom, self.addrTo, self.pkeyFrom, 100, 1, self.ckeyFrom)
+        Transaction(TTypes.creationReward, None, self.addrTo, self.pkeyFrom, Constants.CreationReward(), 0, self.ckeyFrom)
+        Transaction(TTypes.transfer, self.addrFrom, self.addrTo, self.pkeyFrom, 100, 1, self.ckeyFrom)     
+        Transaction(TTypes.fee, None, self.addrTo, self.pkeyFrom, 0, 0, self.ckeyFrom)
 
     def test_badImports(self):
         t1 = Transaction(TTypes.transfer, self.addrFrom, self.addrTo, self.pkeyFrom, 100, 1, self.ckeyFrom)

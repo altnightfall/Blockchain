@@ -4,16 +4,19 @@ from ellipticcurve import PrivateKey, PublicKey, Ecdsa, Signature
 from pickle import dumps, loads
 import type_enforced
 import base64
+from backend.src.bchain.constants import Constants
 
 class TTypes(Enum):
     transfer = 1
-    publishContract = 2
-    executeContract = 3
+    creationReward = 2
+    fee = 3
+    publishContract = 4
+    executeContract = 5
 
 @type_enforced.Enforcer
 class Address():
     __slots__ = ['address']
-    def __init__(self, address: str = "", pkey : [None, PublicKey] = None, pkey_compressed : str = "") -> None:
+    def __init__(self, address: [None, str] = None, pkey : [None, PublicKey] = None, pkey_compressed : [None, str] = None) -> None:
         if(not(pkey is None)):
             self.address = "0x" + pkey.toCompressed()[-40:]
         elif(pkey_compressed):
@@ -34,6 +37,7 @@ class Address():
     @staticmethod
     def validate(address: str) -> bool:
         ret = True
+        ret = ret and not (address is None)
         ret = ret and (len(address) == 42)
         ret = ret and address.startswith('0x')
         return ret
@@ -42,10 +46,10 @@ class Address():
 class Transaction():
     __slots__ = ['data', '_datastring', '_signature']
 
-    def __init__(self, ttype : TTypes, fromAddr : Address, toAddr : Address, pkey : [str, PublicKey], value : int, fee : int, ckey : [None, PrivateKey] = None,  msg : [None, object] = None, datastring : [None, str] = None, timestamp : [None, datetime] = None, signature : [None, str] = None) -> None:
+    def __init__(self, ttype : TTypes, fromAddr : [None, Address], toAddr : Address, pkey : [str, PublicKey], value : int, fee : int, ckey : [None, PrivateKey] = None,  msg : [None, object] = None, datastring : [None, str] = None, timestamp : [None, datetime] = None, signature : [None, str] = None) -> None:
         self.data = dict.fromkeys(['ttype', 'timestamp', 'fromAddr', 'toAddr', 'pkey', 'value', 'fee', 'msg'])
         self.data['ttype'] = ttype
-        self.data['timestamp'] = timestamp or datetime.now()
+        self.data['timestamp'] = timestamp if timestamp else datetime.now()
         self.data['fromAddr'] = fromAddr
         self.data['toAddr'] = toAddr
         if(isinstance(pkey, PublicKey)):
@@ -80,12 +84,27 @@ class Transaction():
     def validate(cls, datastring : str, signature : str) -> bool:
         ret = True
         data = cls.decodeDatastring(datastring)
+        if((data['ttype'] != TTypes.creationReward and data['ttype'] != TTypes.fee) and data['fromAddr'] is None):
+            ret = False
+            raise ValueError("Transaction don't have a fromAddress")
         if(not Ecdsa.verify(datastring, Signature.fromBase64(signature), PublicKey.fromCompressed(data['pkey']))):
             ret = False
             raise ValueError("Transaction didn't pass signature validation")
-        if(not (data["fromAddr"].getAddr()[-40:] == data['pkey'][-40:])):
+        if((data['ttype'] != TTypes.creationReward and data['ttype'] != TTypes.fee) and not (data["fromAddr"].getAddr()[-40:] == data['pkey'][-40:])):
             ret = False
             raise ValueError("Transaction sender don't own public key")
+        if((data['ttype'] == TTypes.creationReward or data['ttype'] == TTypes.fee) and not (data['fromAddr'] is None)):
+            ret = False
+            raise ValueError("Transaction can't have fromAddr if it's of type creationReward or fee")
+        if(data['ttype'] == TTypes.creationReward and (data['value'] != Constants.CreationReward())):
+            ret = False
+            raise ValueError("Creation reward is not right")
+        if(data['ttype'] == TTypes.creationReward and data['fee'] != 0):
+            ret = False
+            raise ValueError("Fee must be 0 for transactions with a type creationReward")
+        if(data['ttype'] == TTypes.fee and data['fee'] != 0):
+            ret = False
+            raise ValueError("Fee must be 0 for transactions with a type fee")
         return ret
 
     @staticmethod
