@@ -27,6 +27,10 @@ pytest = "^7.4.3"
 
 
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+
 [tool.aerich]
 tortoise_orm = "backend.src.database.config.TORTOISE_ORM"
 location = "./migrations"
