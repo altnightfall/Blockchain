@@ -44,5 +44,17 @@ class BlockCreate(BlockBase):
     pass
 
 
+class BlockUpdate(BlockCreate):
+    pass
+
+
+class BlockUpdatePartial(BlockCreate):
+    prevHash: str | None = None
+    transactionList: list[Transaction] | None = None
+    nonce: int | None = None
+    datastring: str | None = None
+    hash: str | None = None
+
+
 class Block(BlockBase):
     id: int
