@@ -2,10 +2,8 @@ from .block import Block
 
 
 class Chain:
-    def __init__(self, start_block: Block):
-        if not start_block.validate():
-            raise ValueError("Cannot validate start block")
-        self.blocks = [start_block]
+    def __init__(self, blocks: list[Block]):
+        self.blocks = blocks.copy()
 
     def __len__(self):
         return len(self.blocks)

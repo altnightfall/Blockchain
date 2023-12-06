@@ -186,4 +186,7 @@ class Block:
         return self.data["transactionList"].getLen()
 
     def to_dict(self) -> dict:
-        pass
+        result = self.data.copy()
+        result["hash"] = self.hash
+        result["datastring"] = self.datastring
+        return result
