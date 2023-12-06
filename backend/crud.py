@@ -3,7 +3,15 @@ from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import Block, Transaction, Address
-from schemas import AddressCreate, BlockCreate, BlockUpdate, TransactionCreate
+from schemas import (
+    AddressCreate,
+    BlockCreate,
+    BlockUpdate,
+    TransactionCreate,
+    TransactionUpdate,
+    BlockUpdatePartial,
+    TransactionUpdatePartial,
+)
 
 
 async def create_address(session: AsyncSession, address_inp: AddressCreate) -> Address:
@@ -53,12 +61,24 @@ async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:
     return await session.get(Block, block_id)
 
 
+async def update_transaction(
+    session: AsyncSession,
+    transaction: Transaction,
+    transaction_update: TransactionUpdate | TransactionUpdatePartial,
+    partial: bool = False,
+) -> Transaction:
+    for name, value in transaction_update.model_dump(exclude_unset=partial).items():
+        setattr(transaction, name, value)
+    await session.commit()
+    return transaction
+
+
 async def update_block(
     session: AsyncSession,
     block: Block,
-    block_update: BlockUpdate,
+    block_update: BlockUpdate | BlockUpdatePartial,
     partial: bool = False,
-):
+) -> Block:
     for name, value in block_update.model_dump(exclude_unset=partial).items():
         setattr(block, name, value)
     await session.commit()
