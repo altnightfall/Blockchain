@@ -28,6 +28,20 @@ class TransactionCreate(TransactionBase):
     pass
 
 
+class TransactionUpdate(TransactionBase):
+    pass
+
+
+class TransactionUpdatePartial(TransactionBase):
+    ttype: int | None = None
+    ttimestamp: datetime | None = None
+    fromAddr: Address | None = None
+    toAddr: Address | None = None
+    value: int | None = None
+    data: int | None = None
+    msg: str | None = None
+
+
 class Transaction(TransactionBase):
     id: int
 
