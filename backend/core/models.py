@@ -47,7 +47,9 @@ class Transaction(Base):
     value: Mapped[int]
     data: Mapped[int]
     msg: Mapped[str]
-    parentBlockID: Mapped[int] = mapped_column(ForeignKey("block_table.id"))
+    parentBlockID: Mapped[int] = mapped_column(
+        ForeignKey("block_table.id"), nullable=True
+    )
     block: Mapped["Block"] = relationship(back_populates="transactionList")
 
 
