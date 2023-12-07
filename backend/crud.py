@@ -61,19 +61,19 @@ async def create_transaction(
 
 async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
     for transaction in block_inp.transactionList:
-        await create_transaction(session, TransactionCreate(**transaction.model_dump()))
+        if (
+            await get_transaction_by_id(session=session, transaction_id=transaction)
+            is None
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction {transaction} not found!",
+            )
     block = Block(**block_inp.model_dump())
     session.add(block)
     await session.commit()
 
     return block
-
-
-async def get_blocks(session: AsyncSession) -> list[Block]:
-    stmt = select(Block).order_by(Block.id)
-    result: Result = await session.execute(stmt)
-    blocks = result.scalars().all()
-    return list(blocks)
 
 
 async def get_address(session: AsyncSession, address: str) -> AddressModel | None:
@@ -87,18 +87,41 @@ async def get_address_by_id(
     return await session.get(AddressModel, address_id)
 
 
+async def get_transaction_by_id(
+    session: AsyncSession, transaction_id: int
+) -> TransactionModel | None:
+    return await session.get(TransactionModel, transaction_id)
+
+
+async def get_balance_by_address_id(session: AsyncSession, address_id: int) -> float:
+    stmt1 = select(TransactionModel.fee).where(TransactionModel.to_addr == address_id)
+    stmt2 = select(TransactionModel.fee).where(TransactionModel.from_addr == address_id)
+    incoming_result = sum(list(await session.scalars(stmt1)))
+    outgoing_result = sum(list(await session.scalars(stmt2)))
+    return incoming_result - outgoing_result
+
+
 async def get_minimum_fee(session: AsyncSession) -> float:
     stmt = select(TransactionModel).order_by(TransactionModel.fee).limit(1)
     return (await session.scalar(stmt)).fee
 
 
-async def get_transaction_by_fee(
+async def get_open_transaction_by_fee(
     session: AsyncSession, fee: float = None
 ) -> list[TransactionModel]:
     if fee is None:
         fee = await get_minimum_fee(session)
-    stmt = select(TransactionModel).where(TransactionModel.fee >= fee)
+    stmt = select(TransactionModel).where(
+        TransactionModel.fee >= fee and TransactionModel.block is None
+    )
     return list(await session.scalars(stmt))
+
+
+async def get_blocks(session: AsyncSession) -> list[Block]:
+    stmt = select(Block).order_by(Block.id)
+    result: Result = await session.execute(stmt)
+    blocks = result.scalars().all()
+    return list(blocks)
 
 
 async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:

@@ -106,7 +106,7 @@ class Block:
     def isMined(self) -> bool:
         return self.hash[: Constants.Difficulty()] == "0" * Constants.Difficulty()
 
-    def mine(self) -> None:
+    async def mine(self) -> None:
         while not self.isMined():
             self.data["nonce"] += 1
             self._datastring = self.encodeDatastring(self.data)
@@ -167,12 +167,12 @@ class Block:
         return cls(0, "FunnyMonke", TransactionList(initTransaction))
 
     @classmethod
-    def construct(
+    async def construct(
         cls, id: int, prevHash: str, ckey: PrivateKey, *transactions: Transaction
     ):
         trlist = TransactionList.create(ckey, None, *transactions)
         block = cls(id, prevHash, trlist)
-        block.mine()
+        await block.mine()
         ret = block.validate()
         if ret:
             return block

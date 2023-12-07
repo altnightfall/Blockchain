@@ -34,3 +34,10 @@ async def address_by_id(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Block {address_id} not found!",
     )
+
+
+async def balance_by_id(
+    address_id: Annotated[int, Path],
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    pass

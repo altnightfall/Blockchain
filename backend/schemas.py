@@ -14,6 +14,11 @@ class Address(AddressBase):
     id: int
 
 
+class AddressBalance(BaseModel):
+    address: Address
+    balance: float
+
+
 class TransactionBase(BaseModel):
     ttype: int
     ttimestamp: datetime
@@ -49,7 +54,7 @@ class Transaction(TransactionBase):
 
 class BlockBase(BaseModel):
     prevHash: str
-    transactionList: list[Transaction]
+    transactionList: list[int]
     nonce: int
     datastring: str
     hash: str

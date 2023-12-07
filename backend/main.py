@@ -4,9 +4,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import crud
 from backend.core.models import Base, db_helper
-from address_views import router as address_router
-from transaction_views import router as transaction_router
+from backend.address_views import router as address_router
+from backend.transaction_views import router as transaction_router
 from backend.block_views import router as block_router
+from backend.chain_views import router as chain_router
 
 
 @asynccontextmanager
@@ -21,6 +22,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(address_router)
 app.include_router(transaction_router)
 app.include_router(block_router)
+app.include_router(chain_router)
 
 app.add_middleware(
     CORSMiddleware,

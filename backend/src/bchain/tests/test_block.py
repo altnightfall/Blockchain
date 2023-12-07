@@ -66,8 +66,8 @@ class TestBlock:
         assert self.initBlock.getTransaction(0).data["ttype"] == TTypes.creationReward
         assert self.initBlock.validate()
 
-    def test_CreateBlock(self):
-        block = Block.construct(1, self.initBlock.hash, self.ckeyMiner, self.tr)
+    async def test_CreateBlock(self):
+        block = await Block.construct(1, self.initBlock.hash, self.ckeyMiner, self.tr)
 
         assert block.getTransactionListLen() == Constants.BlockSize() + 2
         assert (
