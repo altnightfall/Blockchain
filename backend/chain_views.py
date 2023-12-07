@@ -13,7 +13,14 @@ router = APIRouter(prefix="/chain", tags=["Chain"])
 
 @router.post("/mine/", response_model=Block)
 async def mine_new_block():
-    pass
+    return Block(
+        prevHash="balls",
+        transactionList=[69, 69, 69],
+        nonce=69,
+        datastring="balls",
+        hash="balls",
+        id=69,
+    )
 
 
 @router.post("/sync/")
