@@ -3,8 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Block, Transaction, Address
-from schemas import (
+from backend.core.models import Block, Transaction, Address
+from backend.schemas import (
     AddressCreate,
     BlockCreate,
     BlockUpdate,
