@@ -2,10 +2,10 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import crud
+import backend.crud
 from backend.core.models import Base, db_helper
-from address_views import router as address_router
-from transaction_views import router as transaction_router
+from backend.address_views import router as address_router
+from backend.transaction_views import router as transaction_router
 from backend.block_views import router as block_router
 
 
