@@ -13,10 +13,13 @@
         <div class="navbar-collapse" :class="!visible?'collapse':''" id="navbarSupportedContent">
           <ul class="navbar-nav">
             <li class="nav-item">
-                <router-link to="/" class="nav-link" @click="visible=!visible">Home</router-link>
+                <router-link to="/" class="nav-link" @click="visible=!visible">My wallet</router-link>
             </li>
             <li class="nav-item">
-                <router-link to="/about" class="nav-link" @click="visible=!visible">About</router-link>
+                <router-link to="/blockbase" class="nav-link" @click="visible=!visible">Blockbase</router-link>
+            </li>
+            <li class="nav-item">
+                <router-link to="/transactions" class="nav-link" @click="visible=!visible">Transactions</router-link>
             </li>
           </ul>
         </div>

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
-from schemas import Block
+from backend.schemas import Block
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.models import db_helper
-from dependencies import block_by_id
-import crud
+from backend.core.models import db_helper
+from backend.dependencies import block_by_id
+import backend.crud as crud
 
 router = APIRouter(prefix="/block", tags=["Block"])
 

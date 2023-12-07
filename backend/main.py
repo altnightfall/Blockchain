@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.models import Base, db_helper
-from block_views import router as block_router
+from backend.core.models import Base, db_helper
+from backend.block_views import router as block_router
 
 
 @asynccontextmanager

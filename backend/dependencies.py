@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Path, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import db_helper, Block
+from backend.core.models import db_helper, Block
 
-import crud
+import backend.crud as crud
 
 
 async def block_by_id(
