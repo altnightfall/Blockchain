@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,9 +26,10 @@ async def create_transaction(
     session: AsyncSession, transaction_inp: TransactionCreate
 ) -> Transaction:
     for address in [transaction_inp.fromAddr, transaction_inp.toAddr]:
-        if not await get_address(session=session, address=address.address):
-            await create_address(
-                session=session, address_inp=AddressCreate(**address.model_dump())
+        if not await get_address_by_id(session=session, address_id=address):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Address with ID {address} does not exist",
             )
     transaction = Transaction(**transaction_inp.model_dump())
     session.add(transaction)
@@ -55,6 +57,24 @@ async def get_blocks(session: AsyncSession) -> list[Block]:
 async def get_address(session: AsyncSession, address: str) -> Address | None:
     stmt = select(Address).where(Address.address == address)
     return await session.scalar(stmt)
+
+
+async def get_address_by_id(session: AsyncSession, address_id: int) -> Address | None:
+    return await session.get(Address, address_id)
+
+
+async def get_minimum_fee(session: AsyncSession) -> float:
+    stmt = select(Transaction).order_by(Transaction.fee).limit(1)
+    return (await session.scalar(stmt)).fee
+
+
+async def get_transaction_by_fee(
+    session: AsyncSession, fee: float = None
+) -> list[Transaction]:
+    if fee is None:
+        fee = await get_minimum_fee(session)
+    stmt = select(Transaction).where(Transaction.fee >= fee)
+    return list(await session.scalars(stmt))
 
 
 async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:
