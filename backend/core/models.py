@@ -45,6 +45,7 @@ class Transaction(Base):
     fromAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
     toAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
     value: Mapped[int]
+    fee: Mapped[float]
     data: Mapped[int]
     msg: Mapped[str]
     parentBlockID: Mapped[int] = mapped_column(

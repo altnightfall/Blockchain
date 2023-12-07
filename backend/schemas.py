@@ -17,9 +17,10 @@ class Address(AddressBase):
 class TransactionBase(BaseModel):
     ttype: int
     ttimestamp: datetime
-    fromAddr: Address
-    toAddr: Address
+    fromAddr: int
+    toAddr: int
     value: int
+    fee: int
     data: int
     msg: str
 

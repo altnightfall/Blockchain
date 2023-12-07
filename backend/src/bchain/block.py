@@ -106,7 +106,7 @@ class Block:
     def isMined(self) -> bool:
         return self.hash[: Constants.Difficulty()] == "0" * Constants.Difficulty()
 
-    def mine(self) -> None:
+    async def mine(self) -> None:
         while not self.isMined():
             self.data["nonce"] += 1
             self._datastring = self.encodeDatastring(self.data)
