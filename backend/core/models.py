@@ -42,24 +42,24 @@ class Address(Base):
 class Transaction(Base):
     ttype: Mapped[int]
     ttimestamp: Mapped[timestamp] = mapped_column(server_default=func.UTC_TIMESTAMP())
-    fromAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
-    toAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
+    from_addr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
+    to_addr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
     value: Mapped[int]
     fee: Mapped[float]
     data: Mapped[int]
     msg: Mapped[str]
-    parentBlockID: Mapped[int] = mapped_column(
+    parent_block_id: Mapped[int] = mapped_column(
         ForeignKey("block_table.id"), nullable=True
     )
-    block: Mapped["Block"] = relationship(back_populates="transactionList")
+    block: Mapped[int] = mapped_column(ForeignKey("block_table.id"))
 
 
 class Block(Base):
-    prevHash: Mapped[str]
-    transactionList: Mapped[List["Transaction"]] = relationship(back_populates="block")
+    prev_hash: Mapped[str]
+    hash: Mapped[str]
+    transactions_id: Mapped[int] = mapped_column(ForeignKey("transaction_table.id"))
     nonce: Mapped[int]
     datastring: Mapped[str]
-    hash: Mapped[str]
 
 
 class DatabaseHelper:
