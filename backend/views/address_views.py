@@ -1,12 +1,8 @@
 from fastapi import APIRouter, status, Depends, HTTPException, status
-from backend.schemas import (
-    Address,
-    AddressCreate,
-    AddressBalance
-)
+from backend.schemas import Address, AddressCreate, AddressBalance
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
-from backend.dependencies import address_by_id
+from dependencies import address_by_id
 import backend.crud as crud
 
 router = APIRouter(prefix="/address", tags=["Address"])
