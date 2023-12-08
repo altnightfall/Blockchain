@@ -22,16 +22,18 @@ class AddressBalance(BaseModel):
 class TransactionBase(BaseModel):
     ttype: int
     ttimestamp: datetime
-    fromAddr: int
-    toAddr: int
-    value: int
-    fee: int
-    data: int
-    msg: str
+    fromAddr: Address | None = None
+    toAddr: Address | None = None
+    value: float
+    fee: float
+    data: str
+    msg: str | None = None
 
 
 class TransactionCreate(TransactionBase):
-    pass
+    fromAddr: Address | None = None
+    toAddr: Address | None = None
+    msg: str | None = None
 
 
 class TransactionUpdate(TransactionBase):
@@ -43,8 +45,9 @@ class TransactionUpdatePartial(TransactionBase):
     ttimestamp: datetime | None = None
     fromAddr: Address | None = None
     toAddr: Address | None = None
-    value: int | None = None
-    data: int | None = None
+    value: float | None = None
+    fee: float | None = None
+    data: str | None = None
     msg: str | None = None
 
 
@@ -78,3 +81,4 @@ class BlockUpdatePartial(BlockCreate):
 
 class Block(BlockBase):
     id: int
+    transactionList: list[Transaction]
