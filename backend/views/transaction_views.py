@@ -13,6 +13,13 @@ import backend.crud as crud
 router = APIRouter(prefix="/transaction", tags=["Transaction"])
 
 
+@router.get("/", response_model=list[Transaction])
+async def get_all_transactions(
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.get_all_transactions(session)
+
+
 @router.post(
     "/",
     response_model=Transaction,
