@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, status
-import crud
+import backend.crud as crud
 from backend.core.models import Base, db_helper
 from backend.schemas import (
     Address as AddressSchema,
