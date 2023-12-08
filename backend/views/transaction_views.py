@@ -2,6 +2,8 @@ from fastapi import APIRouter, status, Depends
 from backend.schemas import (
     Transaction,
     TransactionCreate,
+    TransactionUpdatePartial,
+    TransactionUpdate,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
@@ -46,3 +48,30 @@ async def create_transaction(
 @router.get("/{transaction_id}/")
 async def get_transaction_by_id(transaction: Transaction = Depends(transaction_by_id)):
     return transaction
+
+
+@router.put("/{transaction_id}/")
+async def update_product(
+    transaction_update: TransactionUpdate,
+    transaction: Transaction = Depends(transaction_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.update_transaction(
+        session=session,
+        transaction=transaction,
+        transaction_update=transaction_update,
+    )
+
+
+@router.patch("/{transaction_id}/")
+async def update_product_partial(
+    transaction_update: TransactionUpdatePartial,
+    transaction: Transaction = Depends(transaction_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.update_transaction(
+        session=session,
+        transaction=transaction,
+        transaction_update=transaction_update,
+        partial=True,
+    )
