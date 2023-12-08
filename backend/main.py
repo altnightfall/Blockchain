@@ -2,7 +2,7 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import backend.crud as crud
+import crud
 from backend.core.models import Base, db_helper
 from backend.views import address_router, block_router, chain_router, transaction_router
 from backend.lifespan import lifespan
