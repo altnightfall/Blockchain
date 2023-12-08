@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, status
-import crud
+import backend.crud as crud
 from backend.core.models import Base, db_helper
 from backend.schemas import (
     Address as AddressSchema,
@@ -66,6 +66,7 @@ async def lifespan(app: FastAPI):
                 temp_dict["toAddr"] = None
             temp_dict.pop("pkey")
             temp_dict["ttimestamp"] = temp_dict.pop("timestamp")
+            temp_dict["block_id"] = None
             tr_to_create = TransactionCreate(**temp_dict)
             db_response = await crud.create_transaction(
                 session=session, transaction_inp=tr_to_create
