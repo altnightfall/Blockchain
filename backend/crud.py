@@ -48,28 +48,41 @@ async def create_transaction(
     session: AsyncSession, transaction_inp: TransactionCreate
 ) -> TransactionModel:
     for address in [transaction_inp.fromAddr, transaction_inp.toAddr]:
-        if not await get_address_by_id(session=session, address_id=address):
+        if address is not None and not await get_address_by_id(
+            session=session, address_id=address.id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Address with ID {address} does not exist",
             )
-    transaction = TransactionModel(**transaction_inp.model_dump())
+    temp_dict = transaction_inp.model_dump()
+    fromaddr = temp_dict.pop("fromAddr")
+    if fromaddr is not None:
+        temp_dict["fromAddr"] = fromaddr["address"]
+    toaddr = temp_dict.pop("toAddr")
+    if toaddr is not None:
+        temp_dict["toAddr"] = toaddr["address"]
+
+    transaction = TransactionModel(**temp_dict)
     session.add(transaction)
     await session.commit()
     return transaction
 
 
 async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
+    temp_list = []
     for transaction in block_inp.transactionList:
-        if (
-            await get_transaction_by_id(session=session, transaction_id=transaction)
-            is None
-        ):
+        tr = await get_transaction_by_id(session=session, transaction_id=transaction)
+        if tr is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Transaction {transaction} not found!",
             )
-    block = Block(**block_inp.model_dump())
+        else:
+            temp_list.append(tr)
+    dump = block_inp.model_dump()
+    dump["transactionList"] = temp_list
+    block = Block(**dump)
     session.add(block)
     await session.commit()
 

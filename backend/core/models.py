@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
 )
-from typing import List
+from typing import List, Optional
 from typing_extensions import Annotated
 from datetime import datetime
 from asyncio import current_task
@@ -42,22 +42,19 @@ class Address(Base):
 class Transaction(Base):
     ttype: Mapped[int]
     ttimestamp: Mapped[timestamp] = mapped_column(server_default=func.UTC_TIMESTAMP())
-    from_addr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
-    to_addr: Mapped[int] = mapped_column(ForeignKey("address_table.id"))
+    fromAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
+    toAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
     value: Mapped[int]
     fee: Mapped[float]
     data: Mapped[int]
-    msg: Mapped[str]
-    parent_block_id: Mapped[int] = mapped_column(
-        ForeignKey("block_table.id"), nullable=True
-    )
-    block: Mapped[int] = mapped_column(ForeignKey("block_table.id"))
+    msg: Mapped[str] = mapped_column(nullable=True)
+    block_id: Mapped[int] = mapped_column(ForeignKey("block_table.id"), nullable=True)
 
 
 class Block(Base):
-    prev_hash: Mapped[str]
+    prevHash: Mapped[str]
     hash: Mapped[str]
-    transactions_id: Mapped[int] = mapped_column(ForeignKey("transaction_table.id"))
+    transactionList: Mapped[List["Transaction"]] = relationship(lazy="immediate")
     nonce: Mapped[int]
     datastring: Mapped[str]
 
