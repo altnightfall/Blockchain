@@ -32,3 +32,11 @@ async def create_block(
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     return await crud.create_block(session=session, block_inp=block_inp)
+
+
+@router.delete("/{block_id}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_block(
+    block: Block = Depends(block_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+) -> None:
+    await crud.delete_block_by_id(session=session, block=block)
