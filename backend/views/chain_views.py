@@ -23,6 +23,15 @@ async def mine_new_block():
     )
 
 
+@router.get("/chain_size/")
+async def get_chain_size(
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return {
+        "size": len(await crud.get_blocks(session=session)),
+    }
+
+
 @router.post("/sync/")
 async def sync_chain_with_peers():
     pass

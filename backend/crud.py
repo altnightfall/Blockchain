@@ -6,6 +6,7 @@ from backend.src.bchain.transaction import (
     Transaction as TransactionClass,
     Address as AddressClass,
 )
+from backend.src.bchain.block import Block as BlockClass, TransactionList
 
 from backend.core.models import (
     Block,
@@ -72,7 +73,7 @@ async def create_transaction(
 async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
     temp_list = []
     for transaction in block_inp.transactionList:
-        tr = await get_transaction_by_id(session=session, transaction_id=transaction)
+        tr = await get_open_transaction_by_fee(session=session)
         if tr is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -83,6 +84,32 @@ async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
     dump = block_inp.model_dump()
     dump["transactionList"] = temp_list
     block = Block(**dump)
+    session.add(block)
+    await session.commit()
+
+    return block
+
+
+async def generate_block(session: AsyncSession) -> Block:
+    tr = await get_open_transaction_by_fee(session=session)
+    if tr is None or len(tr) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No open transactions!",
+        )
+    transaction_list = TransactionList(*tr)
+    last_block = await get_last_block(session)
+    prev_hash = last_block.hash
+    block_class = BlockClass(
+        id=last_block.id + 1, prevHash=prev_hash, transactionList=transaction_list
+    )
+    block = Block()
+    block.prevHash = prev_hash
+    block.hash = block_class.hash
+    block.transactionList = tr
+    block.nonce = block_class.data["nonce"]
+    block.datastring = block_class.datastring
+
     session.add(block)
     await session.commit()
 
@@ -125,7 +152,7 @@ async def get_open_transaction_by_fee(
     if fee is None:
         fee = await get_minimum_fee(session)
     stmt = select(TransactionModel).where(
-        TransactionModel.fee >= fee and TransactionModel.block_id is None
+        (TransactionModel.fee >= fee) & (TransactionModel.block_id is None)
     )
     return list(await session.scalars(stmt))
 
@@ -161,6 +188,30 @@ async def get_blocks(session: AsyncSession) -> list[Block]:
 
 async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:
     return await session.get(Block, block_id)
+
+
+async def get_last_block(session: AsyncSession) -> Block | None:
+    stmt = select(Block).order_by(Block.id.desc()).limit(1)
+    block = (await session.execute(stmt)).scalar()
+    temp_list = []
+    for tr in block.transactionList:
+        if tr.fromAddr is None:
+            fromaddr = None
+        else:
+            address = await get_address(session, tr.fromAddr)
+            fromaddr = AddressModel(id=address.id, address=address.address)
+        if tr.toAddr is None:
+            toaddr = None
+        else:
+            address = await get_address(session, tr.toAddr)
+            toaddr = AddressModel(id=address.id, address=address.address)
+        tr_schema = tr
+        tr_schema.fromAddr = fromaddr
+        tr_schema.toAddr = toaddr
+        temp_list.append(tr_schema)
+    dump = block
+    dump.transactionList = temp_list
+    return dump
 
 
 async def update_transaction(
