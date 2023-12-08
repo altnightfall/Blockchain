@@ -127,6 +127,28 @@ async def get_address_by_id(
     return await session.get(AddressModel, address_id)
 
 
+async def get_all_transactions(session: AsyncSession) -> list[TransactionModel]:
+    stmt = select(TransactionModel)
+    stmt_result = list(await session.scalars(stmt))
+    result = []
+    for tr in stmt_result:
+        if tr.fromAddr is None:
+            fromaddr = None
+        else:
+            address = await get_address(session, tr.fromAddr)
+            fromaddr = AddressModel(id=address.id, address=address.address)
+        if tr.toAddr is None:
+            toaddr = None
+        else:
+            address = await get_address(session, tr.toAddr)
+            toaddr = AddressModel(id=address.id, address=address.address)
+        tr_schema = tr
+        tr_schema.fromAddr = fromaddr
+        tr_schema.toAddr = toaddr
+        result.append(tr_schema)
+    return result
+
+
 async def get_transaction_by_id(
     session: AsyncSession, transaction_id: int
 ) -> TransactionModel | None:
