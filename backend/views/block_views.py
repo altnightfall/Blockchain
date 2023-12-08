@@ -12,42 +12,7 @@ router = APIRouter(prefix="/block", tags=["Block"])
 async def get_blocks(
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    blocks_result = await crud.get_blocks(session=session)
-    result = []
-    for block in blocks_result:
-        tr_list = []
-        for tr in block.transactionList:
-            if tr.fromAddr is None:
-                fromaddr = None
-            else:
-                address = await crud.get_address(session, tr.fromAddr)
-                fromaddr = Address(id=address.id, address=address.address)
-            if tr.toAddr is None:
-                toaddr = None
-            else:
-                address = await crud.get_address(session, tr.toAddr)
-                toaddr = Address(id=address.id, address=address.address)
-            tr_schema = Transaction(
-                id=tr.id,
-                ttype=tr.ttype,
-                ttimestamp=tr.ttimestamp,
-                fromAddr=fromaddr,
-                toAddr=toaddr,
-                value=tr.value,
-                fee=tr.fee,
-                data=tr.data,
-                msg=tr.msg,
-            )
-            tr_list.append(tr_schema)
-        block_schema = Block(
-            id=block.id,
-            prevHash=block.prevHash,
-            hash=block.hash,
-            transactionList=tr_list,
-            nonce=block.nonce,
-            datastring=block.datastring,
-        )
-        result.append(block_schema)
+    result = await crud.get_blocks(session=session)
 
     return result
 

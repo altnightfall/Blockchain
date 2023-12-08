@@ -107,8 +107,8 @@ async def get_transaction_by_id(
 
 
 async def get_balance_by_address_id(session: AsyncSession, address_id: int) -> float:
-    stmt1 = select(TransactionModel.fee).where(TransactionModel.to_addr == address_id)
-    stmt2 = select(TransactionModel.fee).where(TransactionModel.from_addr == address_id)
+    stmt1 = select(TransactionModel.fee).where(TransactionModel.toAddr == address_id)
+    stmt2 = select(TransactionModel.fee).where(TransactionModel.fromAddr == address_id)
     incoming_result = sum(list(await session.scalars(stmt1)))
     outgoing_result = sum(list(await session.scalars(stmt2)))
     return incoming_result - outgoing_result
@@ -125,16 +125,38 @@ async def get_open_transaction_by_fee(
     if fee is None:
         fee = await get_minimum_fee(session)
     stmt = select(TransactionModel).where(
-        TransactionModel.fee >= fee and TransactionModel.block is None
+        TransactionModel.fee >= fee and TransactionModel.block_id is None
     )
     return list(await session.scalars(stmt))
 
 
 async def get_blocks(session: AsyncSession) -> list[Block]:
     stmt = select(Block).order_by(Block.id)
-    result: Result = await session.execute(stmt)
-    blocks = result.scalars().all()
-    return list(blocks)
+    stmt_result: Result = await session.execute(stmt)
+    blocks = stmt_result.scalars().all()
+    blocks_result = list(blocks)
+    result = []
+    for block in blocks_result:
+        tr_list = []
+        for tr in block.transactionList:
+            if tr.fromAddr is None:
+                fromaddr = None
+            else:
+                address = await get_address(session, tr.fromAddr)
+                fromaddr = AddressModel(id=address.id, address=address.address)
+            if tr.toAddr is None:
+                toaddr = None
+            else:
+                address = await get_address(session, tr.toAddr)
+                toaddr = AddressModel(id=address.id, address=address.address)
+            tr_schema = tr
+            tr_schema.fromAddr = fromaddr
+            tr_schema.toAddr = toaddr
+            tr_list.append(tr_schema)
+        block_schema = block
+        block_schema.transactionList = tr_list
+        result.append(block_schema)
+    return result
 
 
 async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:
