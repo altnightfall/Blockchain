@@ -80,7 +80,7 @@ async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
                 detail=f"Transaction {transaction} not found!",
             )
         else:
-            temp_list.append(tr)
+            temp_list = tr.copy()
     dump = block_inp.model_dump()
     dump["transactionList"] = temp_list
     block = Block(**dump)
@@ -173,10 +173,9 @@ async def get_open_transaction_by_fee(
 ) -> list[TransactionModel]:
     if fee is None:
         fee = await get_minimum_fee(session)
-    stmt = select(TransactionModel).where(
-        (TransactionModel.fee >= fee) & (TransactionModel.block_id is None)
-    )
-    return list(await session.scalars(stmt))
+    stmt = select(TransactionModel).where(TransactionModel.block_id.is_(None))
+    result = list(await session.scalars(stmt))
+    return result
 
 
 async def get_blocks(session: AsyncSession) -> list[Block]:
