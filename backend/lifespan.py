@@ -50,18 +50,14 @@ async def lifespan(app: FastAPI):
                 address_obj = await crud.get_address(
                     session, temp_dict["fromAddr"].address
                 )
-                temp_dict["fromAddr"] = AddressSchema(
-                    address=address_obj.address, id=address_obj.id
-                )
+                temp_dict["fromAddr"] = AddressSchema.model_validate(address_obj)
             else:
                 temp_dict["fromAddr"] = None
             if temp_dict["toAddr"] is not None:
                 address_obj = await crud.get_address(
                     session, temp_dict["toAddr"].address
                 )
-                temp_dict["toAddr"] = AddressSchema(
-                    address=address_obj.address, id=address_obj.id
-                )
+                temp_dict["toAddr"] = AddressSchema.model_validate(address_obj)
             else:
                 temp_dict["toAddr"] = None
             temp_dict.pop("pkey")
