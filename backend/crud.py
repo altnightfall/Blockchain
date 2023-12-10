@@ -2,10 +2,6 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.src.bchain.transaction import (
-    Transaction as TransactionClass,
-    Address as AddressClass,
-)
 from backend.src.bchain.block import Block as BlockClass, TransactionList
 
 from backend.core.models import (
@@ -27,18 +23,6 @@ from backend.schemas import (
 async def create_address(
     session: AsyncSession, address_inp: AddressCreate
 ) -> AddressModel:
-    if not AddressClass.validate(address_inp.address):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not validate address {address_inp.address}",
-        )
-
-    if await get_address(session, address_inp.address) is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Address {address_inp.address} already exists",
-        )
-
     address = AddressModel(**address_inp.model_dump())
     session.add(address)
     await session.commit()
@@ -48,14 +32,6 @@ async def create_address(
 async def create_transaction(
     session: AsyncSession, transaction_inp: TransactionCreate
 ) -> TransactionModel:
-    for address in [transaction_inp.fromAddr, transaction_inp.toAddr]:
-        if address is not None and not await get_address_by_id(
-            session=session, address_id=address.id
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Address with ID {address} does not exist",
-            )
     temp_dict = transaction_inp.model_dump()
     fromaddr = temp_dict.pop("fromAddr")
     if fromaddr is not None:
@@ -71,18 +47,13 @@ async def create_transaction(
 
 
 async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
-    temp_list = []
-    for transaction in block_inp.transactionList:
-        tr = await get_open_transaction_by_fee(session=session)
-        if tr is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Transaction {transaction} not found!",
-            )
-        else:
-            temp_list = tr.copy()
+    tr = await get_open_transaction_by_fee(session=session)
+    if tr is None:
+        raise ValueError(
+            f"Open transactions not found!",
+        )
     dump = block_inp.model_dump()
-    dump["transactionList"] = temp_list
+    dump["transactionList"] = tr.copy()
     block = Block(**dump)
     session.add(block)
     await session.commit()

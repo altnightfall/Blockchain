@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException
 from backend.schemas import (
     Transaction,
     TransactionCreate,
@@ -29,6 +29,14 @@ async def create_transaction(
     transaction_inp: TransactionCreate,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
+    for address in [transaction_inp.fromAddr, transaction_inp.toAddr]:
+        if address is not None and not await crud.get_address_by_id(
+            session=session, address_id=address.id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Address with ID {address} does not exist",
+            )
     temp_result = await crud.create_transaction(
         session=session, transaction_inp=transaction_inp
     )
