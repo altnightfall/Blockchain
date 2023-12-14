@@ -11,6 +11,13 @@ from backend.src.bchain.transaction import (
 router = APIRouter(prefix="/address", tags=["Address"])
 
 
+@router.get("/all_addresses/", response_model=list[Address])
+async def get_all_addresses(
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.get_all_addresses(session)
+
+
 @router.post(
     "/",
     response_model=Address,

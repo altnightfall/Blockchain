@@ -81,9 +81,6 @@ async def generate_block(session: AsyncSession) -> Block:
     block.nonce = block_class.data["nonce"]
     block.datastring = block_class.datastring
 
-    session.add(block)
-    await session.commit()
-
     return block
 
 
@@ -96,6 +93,11 @@ async def get_address_by_id(
     session: AsyncSession, address_id: int
 ) -> AddressModel | None:
     return await session.get(AddressModel, address_id)
+
+
+async def get_all_addresses(session: AsyncSession) -> list[AddressModel]:
+    stmt = select(AddressModel)
+    return list((await session.execute(stmt)).scalars().all())
 
 
 async def get_all_transactions(session: AsyncSession) -> list[TransactionModel]:
@@ -127,26 +129,20 @@ async def get_transaction_by_id(
 
 
 async def get_balance_by_address_id(session: AsyncSession, address_id: int) -> float:
-    stmt1 = select(TransactionModel.value).where(TransactionModel.toAddr == address_id)
-    stmt2 = select(TransactionModel.value).where(
-        TransactionModel.fromAddr == address_id
-    )
-    incoming_list = list(await session.scalars(stmt1))
-    outgoing_list = list(await session.scalars(stmt2))
+    address = (await get_address_by_id(session, address_id)).address
+    stmt1 = select(TransactionModel.value).where(TransactionModel.toAddr == address)
+    stmt2 = select(TransactionModel.value).where(TransactionModel.fromAddr == address)
+    incoming_list = list((await session.execute(stmt1)).scalars().all())
+    outgoing_list = list((await session.execute(stmt2)).scalars().all())
     return sum(incoming_list) - sum(outgoing_list)
 
 
-async def get_minimum_fee(session: AsyncSession) -> float:
-    stmt = select(TransactionModel).order_by(TransactionModel.fee).limit(1)
-    return (await session.scalar(stmt)).fee
-
-
-async def get_open_transaction_by_fee(
-    session: AsyncSession, fee: float = None
-) -> list[TransactionModel]:
-    if fee is None:
-        fee = await get_minimum_fee(session)
-    stmt = select(TransactionModel).where(TransactionModel.block_id.is_(None))
+async def get_open_transaction_by_fee(session: AsyncSession) -> list[TransactionModel]:
+    stmt = (
+        select(TransactionModel)
+        .where(TransactionModel.block_id.is_(None))
+        .order_by(TransactionModel.fee)
+    )
     result = list(await session.scalars(stmt))
     return result
 
@@ -178,6 +174,11 @@ async def get_blocks(session: AsyncSession) -> list[Block]:
         block_schema.transactionList = tr_list
         result.append(block_schema)
     return result
+
+
+async def get_chain_length(session: AsyncSession) -> int:
+    stmt = select(Block)
+    return len((await session.execute(stmt)).scalars().all())
 
 
 async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:
