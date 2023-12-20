@@ -33,7 +33,7 @@ export default {
   methods: {
     showTable(){
       axios
-          .get('/block')
+          .get('/blocks')
           .then(response => {
             this.blocks = response.data
           })
