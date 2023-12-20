@@ -20,16 +20,16 @@
     </thead>
     <tbody>
       <tr v-for="transaction in transactions" :key="transaction.id">
-        <td>{{transaction.id}}</td>
-        <td>{{transaction.parentBlockID}}</td>
-        <td>{{transaction.msg}}</td>
-        <td>{{transaction.data}}</td>
-        <td>{{transaction.fee}}</td>
-        <td>{{transaction.value}}</td>
-        <td>{{transaction.fromAddr}}</td>
-        <td>{{transaction.toAddr}}</td>
-        <td>{{transaction.timestamp}}</td>
-        <td>{{transaction.ttype}}</td>
+        <td class="text-break">{{transaction.id}}</td>
+        <td class="text-break">{{transaction.parentBlockID}}</td>
+        <td class="text-break">{{transaction.msg}}</td>
+        <td class="text-break">{{transaction.data}}</td>
+        <td class="text-break">{{transaction.fee}}</td>
+        <td class="text-break">{{transaction.value}}</td>
+        <td class="text-break">{{transaction.fromAddr}}</td>
+        <td class="text-break">{{transaction.toAddr}}</td>
+        <td class="text-break">{{transaction.timestamp}}</td>
+        <td class="text-break">{{transaction.ttype}}</td>
       </tr>
     </tbody>
   </table>

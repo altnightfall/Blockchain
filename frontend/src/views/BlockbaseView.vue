@@ -15,11 +15,11 @@
     </thead>
     <tbody>
       <tr v-for="block in blocks" :key="block.id">
-        <td>{{block.id}}</td>
-        <td>{{block.prevHash}}</td>
-        <td>{{block.nonce}}</td>
-        <td>{{block.datastring}}</td>
-        <td>{{block.hash}}</td>
+        <td class="text-break">{{block.id}}</td>
+        <td class="text-break">{{block.prevHash}}</td>
+        <td class="text-break">{{block.nonce}}</td>
+        <td class="text-break">{{block.datastring}}</td>
+        <td class="text-break">{{block.hash}}</td>
       </tr>
     </tbody>
   </table>

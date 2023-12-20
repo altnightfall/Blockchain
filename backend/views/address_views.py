@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Depends, HTTPException, status
 from backend.schemas import Address, AddressCreate, AddressBalance
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
-from dependencies import address_by_id
+from backend.dependencies import address_by_id
 import backend.crud as crud
 from backend.src.bchain.transaction import (
     Address as AddressClass,
