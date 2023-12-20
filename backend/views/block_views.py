@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException
 from backend.schemas import Block, BlockCreate, Transaction, Address
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
@@ -47,7 +47,13 @@ async def create_block(
     block_inp: BlockCreate,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    return await crud.create_block(session=session, block_inp=block_inp)
+    try:
+        return await crud.create_block(session=session, block_inp=block_inp)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
 
 
 @router.delete("/{block_id}/", status_code=status.HTTP_204_NO_CONTENT)
