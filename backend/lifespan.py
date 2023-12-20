@@ -51,9 +51,7 @@ async def lifespan(app: FastAPI):
                     session, temp_dict["fromAddr"].address
                 )
 
-                temp_dict["fromAddr"] = AddressSchema(
-                    address=address_obj.address, id=address_obj.id
-                )
+                temp_dict["fromAddr"] = id = address_obj.id
             else:
                 temp_dict["fromAddr"] = None
             if temp_dict["toAddr"] is not None:
@@ -61,9 +59,7 @@ async def lifespan(app: FastAPI):
                     session, temp_dict["toAddr"].address
                 )
 
-                temp_dict["toAddr"] = AddressSchema(
-                    address=address_obj.address, id=address_obj.id
-                )
+                temp_dict["toAddr"] = address_obj.id
             else:
                 temp_dict["toAddr"] = None
             temp_dict["ttimestamp"] = temp_dict.pop("timestamp")

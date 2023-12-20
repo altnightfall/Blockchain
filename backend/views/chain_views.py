@@ -33,7 +33,7 @@ async def mine_new_block(
         )
     tr_list = []
     for tr_cur in tr:
-        temp_tr = TransactionClass().fromDatastring(
+        temp_tr = TransactionClass.fromDatastring(
             datastring=tr_cur.data,
             signature=tr_cur.signature,
         )

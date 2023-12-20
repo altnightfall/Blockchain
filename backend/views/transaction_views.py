@@ -1,5 +1,6 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from backend.schemas import (
+    Address as AddressSchema,
     Transaction,
     TransactionCreate,
     TransactionUpdatePartial,
@@ -31,7 +32,7 @@ async def create_transaction(
 ):
     for address in [transaction_inp.fromAddr, transaction_inp.toAddr]:
         if address is not None and not await crud.get_address_by_id(
-            session=session, address_id=address.id
+            session=session, address_id=address
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -43,9 +44,11 @@ async def create_transaction(
     from_addr = await crud.get_address_by_id(
         session=session, address_id=temp_result.fromAddr
     )
+    from_addr = AddressSchema(id=from_addr.id, address=from_addr.address)
     to_addr = await crud.get_address_by_id(
         session=session, address_id=temp_result.toAddr
     )
+    to_addr = AddressSchema(id=to_addr.id, address=to_addr.address)
     result = Transaction(
         ttype=temp_result.ttype,
         ttimestamp=temp_result.ttimestamp,
@@ -56,6 +59,8 @@ async def create_transaction(
         data=temp_result.data,
         msg=temp_result.msg,
         id=temp_result.id,
+        pkey=temp_result.pkey,
+        signature=temp_result.signature,
     )
     return result
 

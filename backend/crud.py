@@ -35,10 +35,10 @@ async def create_transaction(
     temp_dict = transaction_inp.model_dump()
     fromaddr = temp_dict.pop("fromAddr")
     if fromaddr is not None:
-        temp_dict["fromAddr"] = fromaddr["address"]
+        temp_dict["fromAddr"] = fromaddr
     toaddr = temp_dict.pop("toAddr")
     if toaddr is not None:
-        temp_dict["toAddr"] = toaddr["address"]
+        temp_dict["toAddr"] = toaddr
 
     transaction = TransactionModel(**temp_dict)
     session.add(transaction)
@@ -108,12 +108,12 @@ async def get_all_transactions(session: AsyncSession) -> list[TransactionModel]:
         if tr.fromAddr is None:
             fromaddr = None
         else:
-            address = await get_address(session, tr.fromAddr)
+            address = await get_address_by_id(session, tr.fromAddr)
             fromaddr = AddressModel(id=address.id, address=address.address)
         if tr.toAddr is None:
             toaddr = None
         else:
-            address = await get_address(session, tr.toAddr)
+            address = await get_address_by_id(session, tr.toAddr)
             toaddr = AddressModel(id=address.id, address=address.address)
         tr_schema = tr
         tr_schema.fromAddr = fromaddr
@@ -159,12 +159,14 @@ async def get_blocks(session: AsyncSession) -> list[Block]:
             if tr.fromAddr is None:
                 fromaddr = None
             else:
-                address = await get_address(session, tr.fromAddr)
+                address = await get_address_by_id(
+                    session=session, address_id=tr.fromAddr
+                )
                 fromaddr = AddressModel(id=address.id, address=address.address)
             if tr.toAddr is None:
                 toaddr = None
             else:
-                address = await get_address(session, tr.toAddr)
+                address = await get_address_by_id(session=session, address_id=tr.toAddr)
                 toaddr = AddressModel(id=address.id, address=address.address)
             tr_schema = tr
             tr_schema.fromAddr = fromaddr

@@ -33,9 +33,12 @@ class TransactionBase(BaseModel):
 
 
 class TransactionCreate(TransactionBase):
-    fromAddr: Address | None = None
-    toAddr: Address | None = None
+    fromAddr: int | None = None
+    toAddr: int | None = None
     msg: str | None = None
+    pkey: None
+    data: None
+    signature: None
 
 
 class TransactionUpdate(TransactionBase):
