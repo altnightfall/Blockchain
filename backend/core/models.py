@@ -37,6 +37,7 @@ timestamp = Annotated[
 
 class Address(Base):
     address: Mapped[str] = mapped_column(String(42))
+    ckey: Mapped[str]
 
 
 class Transaction(Base):
@@ -45,10 +46,9 @@ class Transaction(Base):
     fromAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
     toAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
     pkey: Mapped[str]
-    value: Mapped[float]
-    fee: Mapped[float]
+    value: Mapped[int]
+    fee: Mapped[int]
     data: Mapped[str]
-    msg: Mapped[str] = mapped_column(nullable=True)
     block_id: Mapped[int] = mapped_column(ForeignKey("block_table.id"), nullable=True)
     signature: Mapped[str]
 

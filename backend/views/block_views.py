@@ -36,24 +36,6 @@ async def get_block_by_id(block: Block = Depends(block_by_id)):
     return block
 
 
-@router.post(
-    "/",
-    response_model=Block,
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_block(
-    block_inp: BlockCreate,
-    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
-):
-    try:
-        return await crud.create_block(session=session, block_inp=block_inp)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        )
-
-
 @router.get("/get_length")
 async def get_length(
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),

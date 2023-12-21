@@ -10,8 +10,7 @@ from backend.schemas import (
     TransactionCreate,
     Transaction as TransactionSchema,
 )
-from backend.src.bchain.block import Block, Address as AddressClass
-from backend.src.bchain.transaction import Transaction
+from backend.src.bchain import Block, Address as AddressClass, Transaction, Constants
 from ellipticcurve import PrivateKey
 
 
@@ -30,9 +29,9 @@ async def lifespan(app: FastAPI):
         pkey2 = ckey2.publicKey()
         addr1 = AddressClass(pkey=pkey1)
         addr2 = AddressClass(pkey=pkey2)
-        address1 = AddressCreate(address=addr1.address)
+        address1 = AddressCreate(address=addr1.address, ckey=ckey1.toString())
         await crud.create_address(session=session, address_inp=address1)
-        address2 = AddressCreate(address=addr2.address)
+        address2 = AddressCreate(address=addr2.address, ckey=ckey2.toString())
         await crud.create_address(session=session, address_inp=address2)
 
         init_block: Block = Block.createInit(ckey1)
@@ -44,14 +43,13 @@ async def lifespan(app: FastAPI):
         created_tr = []
         for tr_cur in tr:
             temp_dict = tr_cur.data.copy()
-            temp_dict["data"] = tr_cur.datastring
             temp_dict["ttype"] = temp_dict["ttype"].value
             if temp_dict["fromAddr"] is not None:
                 address_obj = await crud.get_address(
                     session, temp_dict["fromAddr"].address
                 )
 
-                temp_dict["fromAddr"] = id = address_obj.id
+                temp_dict["fromAddr"] = address_obj.id
             else:
                 temp_dict["fromAddr"] = None
             if temp_dict["toAddr"] is not None:
@@ -64,6 +62,7 @@ async def lifespan(app: FastAPI):
                 temp_dict["toAddr"] = None
             temp_dict["ttimestamp"] = temp_dict.pop("timestamp")
             temp_dict["block_id"] = None
+            temp_dict["data"] = tr_cur.datastring
             temp_dict["signature"] = tr_cur.signature
             tr_to_create = TransactionCreate(**temp_dict)
             db_response = await crud.create_transaction(
