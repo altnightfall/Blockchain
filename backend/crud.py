@@ -47,22 +47,24 @@ async def create_transaction(
 
 
 async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
-    tr = await get_open_transaction_by_fee(session=session)
-    if tr is None:
-        raise ValueError(
-            f"Open transactions not found!",
-        )
+    tr_list = []
+    for tr in block_inp.transactionList:
+        tr_cur = await get_transaction_by_id(session=session, transaction_id=tr)
+        tr_list.append(tr_cur)
     dump = block_inp.model_dump()
-    dump["transactionList"] = tr.copy()
+    dump["transactionList"] = tr_list.copy()
     block = Block(**dump)
     session.add(block)
     await session.commit()
-
+    for tr in block.transactionList:
+        await update_transaction_parent(
+            session=session, transaction_id=tr.id, inp_block_id=block.id
+        )
     return block
 
 
-async def generate_block(session: AsyncSession) -> Block:
-    tr = await get_open_transaction_by_fee(session=session)
+async def generate_block(session: AsyncSession, limit: int) -> Block:
+    tr = await get_open_transaction_by_fee(session=session, limit=limit)
     if tr is None or len(tr) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -125,11 +127,12 @@ async def get_all_transactions(session: AsyncSession) -> list[TransactionModel]:
 async def get_transaction_by_id(
     session: AsyncSession, transaction_id: int
 ) -> TransactionModel | None:
-    return await session.get(TransactionModel, transaction_id)
+    result = await session.get(TransactionModel, transaction_id)
+    return result
 
 
 async def get_balance_by_address_id(session: AsyncSession, address_id: int) -> float:
-    address = (await get_address_by_id(session, address_id)).address
+    address = (await get_address_by_id(session, address_id)).id
     stmt1 = select(TransactionModel.value).where(TransactionModel.toAddr == address)
     stmt2 = select(TransactionModel.value).where(TransactionModel.fromAddr == address)
     incoming_list = list((await session.execute(stmt1)).scalars().all())
@@ -137,11 +140,14 @@ async def get_balance_by_address_id(session: AsyncSession, address_id: int) -> f
     return sum(incoming_list) - sum(outgoing_list)
 
 
-async def get_open_transaction_by_fee(session: AsyncSession) -> list[TransactionModel]:
+async def get_open_transaction_by_fee(
+    session: AsyncSession, limit: int
+) -> list[TransactionModel]:
     stmt = (
         select(TransactionModel)
         .where(TransactionModel.block_id.is_(None))
         .order_by(TransactionModel.fee)
+        .limit(limit)
     )
     result = list(await session.scalars(stmt))
     return result
@@ -220,12 +226,12 @@ async def get_last_block(session: AsyncSession) -> Block | None:
         if tr.fromAddr is None:
             fromaddr = None
         else:
-            address = await get_address(session, tr.fromAddr)
+            address = await get_address_by_id(session, tr.fromAddr)
             fromaddr = AddressModel(id=address.id, address=address.address)
         if tr.toAddr is None:
             toaddr = None
         else:
-            address = await get_address(session, tr.toAddr)
+            address = await get_address_by_id(session, tr.toAddr)
             toaddr = AddressModel(id=address.id, address=address.address)
         tr_schema = tr
         tr_schema.fromAddr = fromaddr
@@ -246,6 +252,15 @@ async def update_transaction(
         setattr(transaction, name, value)
     await session.commit()
     return transaction
+
+
+async def update_transaction_parent(
+    session: AsyncSession, transaction_id: int, inp_block_id: int
+) -> TransactionModel:
+    tr = await get_transaction_by_id(session=session, transaction_id=transaction_id)
+    setattr(tr, "block_id", inp_block_id)
+    await session.commit()
+    return tr
 
 
 async def update_block(
