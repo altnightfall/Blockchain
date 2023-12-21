@@ -35,10 +35,10 @@ async def create_transaction(
     temp_dict = transaction_inp.model_dump()
     fromaddr = temp_dict.pop("fromAddr")
     if fromaddr is not None:
-        temp_dict["fromAddr"] = fromaddr["address"]
+        temp_dict["fromAddr"] = fromaddr
     toaddr = temp_dict.pop("toAddr")
     if toaddr is not None:
-        temp_dict["toAddr"] = toaddr["address"]
+        temp_dict["toAddr"] = toaddr
 
     transaction = TransactionModel(**temp_dict)
     session.add(transaction)
@@ -81,9 +81,6 @@ async def generate_block(session: AsyncSession) -> Block:
     block.nonce = block_class.data["nonce"]
     block.datastring = block_class.datastring
 
-    session.add(block)
-    await session.commit()
-
     return block
 
 
@@ -98,6 +95,11 @@ async def get_address_by_id(
     return await session.get(AddressModel, address_id)
 
 
+async def get_all_addresses(session: AsyncSession) -> list[AddressModel]:
+    stmt = select(AddressModel)
+    return list((await session.execute(stmt)).scalars().all())
+
+
 async def get_all_transactions(session: AsyncSession) -> list[TransactionModel]:
     stmt = select(TransactionModel)
     stmt_result = list(await session.scalars(stmt))
@@ -106,12 +108,12 @@ async def get_all_transactions(session: AsyncSession) -> list[TransactionModel]:
         if tr.fromAddr is None:
             fromaddr = None
         else:
-            address = await get_address(session, tr.fromAddr)
+            address = await get_address_by_id(session, tr.fromAddr)
             fromaddr = AddressModel(id=address.id, address=address.address)
         if tr.toAddr is None:
             toaddr = None
         else:
-            address = await get_address(session, tr.toAddr)
+            address = await get_address_by_id(session, tr.toAddr)
             toaddr = AddressModel(id=address.id, address=address.address)
         tr_schema = tr
         tr_schema.fromAddr = fromaddr
@@ -127,26 +129,20 @@ async def get_transaction_by_id(
 
 
 async def get_balance_by_address_id(session: AsyncSession, address_id: int) -> float:
-    stmt1 = select(TransactionModel.value).where(TransactionModel.toAddr == address_id)
-    stmt2 = select(TransactionModel.value).where(
-        TransactionModel.fromAddr == address_id
-    )
-    incoming_list = list(await session.scalars(stmt1))
-    outgoing_list = list(await session.scalars(stmt2))
+    address = (await get_address_by_id(session, address_id)).address
+    stmt1 = select(TransactionModel.value).where(TransactionModel.toAddr == address)
+    stmt2 = select(TransactionModel.value).where(TransactionModel.fromAddr == address)
+    incoming_list = list((await session.execute(stmt1)).scalars().all())
+    outgoing_list = list((await session.execute(stmt2)).scalars().all())
     return sum(incoming_list) - sum(outgoing_list)
 
 
-async def get_minimum_fee(session: AsyncSession) -> float:
-    stmt = select(TransactionModel).order_by(TransactionModel.fee).limit(1)
-    return (await session.scalar(stmt)).fee
-
-
-async def get_open_transaction_by_fee(
-    session: AsyncSession, fee: float = None
-) -> list[TransactionModel]:
-    if fee is None:
-        fee = await get_minimum_fee(session)
-    stmt = select(TransactionModel).where(TransactionModel.block_id.is_(None))
+async def get_open_transaction_by_fee(session: AsyncSession) -> list[TransactionModel]:
+    stmt = (
+        select(TransactionModel)
+        .where(TransactionModel.block_id.is_(None))
+        .order_by(TransactionModel.fee)
+    )
     result = list(await session.scalars(stmt))
     return result
 
@@ -163,12 +159,14 @@ async def get_blocks(session: AsyncSession) -> list[Block]:
             if tr.fromAddr is None:
                 fromaddr = None
             else:
-                address = await get_address(session, tr.fromAddr)
+                address = await get_address_by_id(
+                    session=session, address_id=tr.fromAddr
+                )
                 fromaddr = AddressModel(id=address.id, address=address.address)
             if tr.toAddr is None:
                 toaddr = None
             else:
-                address = await get_address(session, tr.toAddr)
+                address = await get_address_by_id(session=session, address_id=tr.toAddr)
                 toaddr = AddressModel(id=address.id, address=address.address)
             tr_schema = tr
             tr_schema.fromAddr = fromaddr
@@ -178,6 +176,11 @@ async def get_blocks(session: AsyncSession) -> list[Block]:
         block_schema.transactionList = tr_list
         result.append(block_schema)
     return result
+
+
+async def get_chain_length(session: AsyncSession) -> int:
+    stmt = select(Block)
+    return len((await session.execute(stmt)).scalars().all())
 
 
 async def get_block_by_id(session: AsyncSession, block_id: int) -> Block | None:

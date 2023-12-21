@@ -1,14 +1,23 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from backend.schemas import (
+    Address as AddressSchema,
     Transaction,
     TransactionCreate,
     TransactionUpdatePartial,
     TransactionUpdate,
 )
+from backend.src.bchain import (
+    Address as AddressClass,
+    Transaction as TransactionClass,
+    TransactionList,
+    Block as BlockClass,
+    TTypes,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
 from backend.dependencies import transaction_by_id
 import backend.crud as crud
+from ellipticcurve import PrivateKey
 
 router = APIRouter(prefix="/transaction", tags=["Transaction"])
 
@@ -29,23 +38,51 @@ async def create_transaction(
     transaction_inp: TransactionCreate,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    for address in [transaction_inp.fromAddr, transaction_inp.toAddr]:
-        if address is not None and not await crud.get_address_by_id(
-            session=session, address_id=address.id
-        ):
+    from_addr_db = await crud.get_address_by_id(
+        session=session, address_id=transaction_inp.fromAddr
+    )
+    to_addr_db = await crud.get_address_by_id(
+        session=session, address_id=transaction_inp.toAddr
+    )
+    for address_id, address in zip(
+        [transaction_inp.fromAddr, transaction_inp.toAddr], [from_addr_db, to_addr_db]
+    ):
+        if address_id is not None and not address:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Address with ID {address} does not exist",
             )
+
+    try:
+        tr_class = TransactionClass(
+            ttype=transaction_inp.ttype,
+            fromAddr=AddressClass(address=from_addr_db.address),
+            toAddr=AddressClass(address=to_addr_db.address),
+            pkey=from_addr_db.address[2:],
+            value=transaction_inp.value,
+            fee=transaction_inp.fee,
+            msg=transaction_inp.msg,
+            timestamp=transaction_inp.ttimestamp,
+        )
+        transaction_inp.signature = tr_class.signature
+        transaction_inp.data = tr_class.datastring
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=f"Error validating transaction",
+        )
+
     temp_result = await crud.create_transaction(
         session=session, transaction_inp=transaction_inp
     )
     from_addr = await crud.get_address_by_id(
         session=session, address_id=temp_result.fromAddr
     )
+    from_addr = AddressSchema(id=from_addr.id, address=from_addr.address)
     to_addr = await crud.get_address_by_id(
         session=session, address_id=temp_result.toAddr
     )
+    to_addr = AddressSchema(id=to_addr.id, address=to_addr.address)
     result = Transaction(
         ttype=temp_result.ttype,
         ttimestamp=temp_result.ttimestamp,
@@ -56,6 +93,8 @@ async def create_transaction(
         data=temp_result.data,
         msg=temp_result.msg,
         id=temp_result.id,
+        pkey=temp_result.pkey,
+        signature=temp_result.signature,
     )
     return result
 

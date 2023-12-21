@@ -21,19 +21,24 @@ class AddressBalance(BaseModel):
 
 class TransactionBase(BaseModel):
     ttype: int
-    ttimestamp: datetime
     fromAddr: Address | None = None
     toAddr: Address | None = None
+    pkey: str
     value: float
     fee: float
-    data: str
     msg: str | None = None
+    data: str
+    ttimestamp: datetime
+    signature: str
 
 
 class TransactionCreate(TransactionBase):
-    fromAddr: Address | None = None
-    toAddr: Address | None = None
+    fromAddr: int | None = None
+    toAddr: int | None = None
     msg: str | None = None
+    pkey: None
+    data: None
+    signature: None
 
 
 class TransactionUpdate(TransactionBase):

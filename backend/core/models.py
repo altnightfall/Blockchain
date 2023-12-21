@@ -44,11 +44,13 @@ class Transaction(Base):
     ttimestamp: Mapped[timestamp] = mapped_column(server_default=func.UTC_TIMESTAMP())
     fromAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
     toAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
-    value: Mapped[int]
+    pkey: Mapped[str]
+    value: Mapped[float]
     fee: Mapped[float]
-    data: Mapped[int]
+    data: Mapped[str]
     msg: Mapped[str] = mapped_column(nullable=True)
     block_id: Mapped[int] = mapped_column(ForeignKey("block_table.id"), nullable=True)
+    signature: Mapped[str]
 
 
 class Block(Base):
