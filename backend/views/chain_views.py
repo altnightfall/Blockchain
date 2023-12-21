@@ -7,15 +7,15 @@ from backend.schemas import (
     TransactionCreate,
     Transaction as TransactionSchema,
 )
-from backend.src.bchain.transaction import (
-    Transaction as TransactionClass,
+from backend.src.bchain import (
     Address as AddressClass,
+    Transaction as TransactionClass,
+    TransactionList,
+    Block as BlockClass,
 )
-from backend.src.bchain.block import Block as BlockClass, TransactionList
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
 from backend.dependencies import block_by_id
-from backend.src.bchain.block import Block as BlockClass
 import backend.crud as crud
 
 router = APIRouter(prefix="/chain", tags=["Chain"])

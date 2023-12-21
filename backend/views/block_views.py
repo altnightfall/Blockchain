@@ -3,6 +3,12 @@ from backend.schemas import Block, BlockCreate, Transaction, Address
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
 from backend.dependencies import block_by_id
+from backend.src.bchain import (
+    Address as AddressClass,
+    Transaction as TransactionClass,
+    TransactionList,
+    Block as BlockClass,
+)
 import backend.crud as crud
 
 router = APIRouter(prefix="/block", tags=["Block"])

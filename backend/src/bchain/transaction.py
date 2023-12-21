@@ -57,12 +57,12 @@ class Transaction:
 
     def __init__(
         self,
-        ttype: TTypes,
+        ttype,
         fromAddr: [None, Address],
         toAddr: Address,
         pkey: [str, PublicKey],
-        value: int,
-        fee: int,
+        value: float,
+        fee: float,
         ckey: [None, PrivateKey] = None,
         msg: [None, object] = None,
         datastring: [None, str] = None,
