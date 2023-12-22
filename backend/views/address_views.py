@@ -1,14 +1,25 @@
+from ellipticcurve import PrivateKey
 from fastapi import APIRouter, status, Depends, HTTPException, status
 from backend.schemas import Address, AddressCreate, AddressBalance
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
 from backend.dependencies import address_by_id
 import backend.crud as crud
-from backend.src.bchain.transaction import (
+from backend.src.bchain import (
     Address as AddressClass,
+    Transaction as TransactionClass,
+    TransactionList,
+    Block as BlockClass,
 )
 
 router = APIRouter(prefix="/address", tags=["Address"])
+
+
+@router.get("/all_addresses/", response_model=list[Address])
+async def get_all_addresses(
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.get_all_addresses(session)
 
 
 @router.post(
@@ -17,21 +28,14 @@ router = APIRouter(prefix="/address", tags=["Address"])
     status_code=status.HTTP_201_CREATED,
 )
 async def create_address(
-    address_inp: AddressCreate,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    if not AddressClass.validate(address_inp.address):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not validate address {address_inp.address}",
-        )
-
-    if await crud.get_address(session, address_inp.address) is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Address {address_inp.address} already exists",
-        )
-    return await crud.create_address(session=session, address_inp=address_inp)
+    inp_ckey = PrivateKey()
+    inp_address = AddressClass(pkey=inp_ckey.publicKey())
+    inp_address_schema = AddressCreate(
+        address=inp_address.address, ckey=inp_ckey.toString()
+    )
+    return await crud.create_address(session=session, address_inp=inp_address_schema)
 
 
 @router.get("/{address_id}/")

@@ -37,6 +37,7 @@ timestamp = Annotated[
 
 class Address(Base):
     address: Mapped[str] = mapped_column(String(42))
+    ckey: Mapped[str]
 
 
 class Transaction(Base):
@@ -44,11 +45,12 @@ class Transaction(Base):
     ttimestamp: Mapped[timestamp] = mapped_column(server_default=func.UTC_TIMESTAMP())
     fromAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
     toAddr: Mapped[int] = mapped_column(ForeignKey("address_table.id"), nullable=True)
+    pkey: Mapped[str]
     value: Mapped[int]
-    fee: Mapped[float]
-    data: Mapped[int]
-    msg: Mapped[str] = mapped_column(nullable=True)
+    fee: Mapped[int]
+    data: Mapped[str]
     block_id: Mapped[int] = mapped_column(ForeignKey("block_table.id"), nullable=True)
+    signature: Mapped[str]
 
 
 class Block(Base):

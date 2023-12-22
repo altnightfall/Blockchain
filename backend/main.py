@@ -6,7 +6,7 @@ import backend.crud
 from backend.core.models import Base, db_helper
 from backend.views import address_router, block_router, chain_router, transaction_router
 from backend.lifespan import lifespan
-
+import argparse
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(address_router)
@@ -32,4 +32,8 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app")
+    parser = argparse.ArgumentParser(description="Blockchain Node")
+    parser.add_argument("--port", "--p", default="8000")
+    args = parser.parse_args()
+
+    uvicorn.run("main:app", port=int(args.port))

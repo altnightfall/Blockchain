@@ -57,7 +57,7 @@ class Transaction:
 
     def __init__(
         self,
-        ttype: TTypes,
+        ttype,
         fromAddr: [None, Address],
         toAddr: Address,
         pkey: [str, PublicKey],

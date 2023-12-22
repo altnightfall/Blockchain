@@ -3,6 +3,12 @@ from backend.schemas import Block, BlockCreate, Transaction, Address
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.models import db_helper
 from backend.dependencies import block_by_id
+from backend.src.bchain import (
+    Address as AddressClass,
+    Transaction as TransactionClass,
+    TransactionList,
+    Block as BlockClass,
+)
 import backend.crud as crud
 
 router = APIRouter(prefix="/block", tags=["Block"])
@@ -25,35 +31,16 @@ async def get_last_block(
     return result
 
 
-@router.get("/generate_block/", response_model=Block)
-async def generate_block(
-    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
-):
-    result = await crud.generate_block(session)
-    return result
-
-
 @router.get("/{block_id}/", response_model=Block)
 async def get_block_by_id(block: Block = Depends(block_by_id)):
     return block
 
 
-@router.post(
-    "/",
-    response_model=Block,
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_block(
-    block_inp: BlockCreate,
+@router.get("/get_length")
+async def get_length(
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    try:
-        return await crud.create_block(session=session, block_inp=block_inp)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        )
+    return {"chain_length": await crud.get_chain_length(session)}
 
 
 @router.delete("/{block_id}/", status_code=status.HTTP_204_NO_CONTENT)

@@ -7,7 +7,7 @@ class AddressBase(BaseModel):
 
 
 class AddressCreate(AddressBase):
-    pass
+    ckey: str
 
 
 class Address(AddressBase):
@@ -21,19 +21,19 @@ class AddressBalance(BaseModel):
 
 class TransactionBase(BaseModel):
     ttype: int
+    fromAddr: int | None = None
+    toAddr: int | None = None
+    value: int
+    fee: int
     ttimestamp: datetime
-    fromAddr: Address | None = None
-    toAddr: Address | None = None
-    value: float
-    fee: float
-    data: str
-    msg: str | None = None
 
 
 class TransactionCreate(TransactionBase):
-    fromAddr: Address | None = None
-    toAddr: Address | None = None
-    msg: str | None = None
+    fromAddr: int | None = None
+    toAddr: int | None = None
+    pkey: str
+    data: str
+    signature: str
 
 
 class TransactionUpdate(TransactionBase):
@@ -45,14 +45,17 @@ class TransactionUpdatePartial(TransactionBase):
     ttimestamp: datetime | None = None
     fromAddr: Address | None = None
     toAddr: Address | None = None
-    value: float | None = None
-    fee: float | None = None
-    data: str | None = None
-    msg: str | None = None
+    value: int | None = None
+    fee: int | None = None
 
 
 class Transaction(TransactionBase):
+    fromAddr: Address | None
+    toAddr: Address | None
     id: int
+    data: str
+    signature: str
+    block_id: int | None
 
 
 class BlockBase(BaseModel):

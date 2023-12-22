@@ -69,7 +69,6 @@ class TransactionList:
         return len(self.data)
 
 
-@type_enforced.Enforcer
 class Block:
     __slots__ = ["data", "_datastring", "_hash"]
 
