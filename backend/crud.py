@@ -63,29 +63,6 @@ async def create_block(session: AsyncSession, block_inp: BlockCreate) -> Block:
     return block
 
 
-async def generate_block(session: AsyncSession, limit: int) -> Block:
-    tr = await get_open_transaction_by_fee(session=session, limit=limit)
-    if tr is None or len(tr) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No open transactions!",
-        )
-    transaction_list = TransactionList(*tr)
-    last_block = await get_last_block(session)
-    prev_hash = last_block.hash
-    block_class = BlockClass(
-        id=last_block.id + 1, prevHash=prev_hash, transactionList=transaction_list
-    )
-    block = Block()
-    block.prevHash = prev_hash
-    block.hash = block_class.hash
-    block.transactionList = tr
-    block.nonce = block_class.data["nonce"]
-    block.datastring = block_class.datastring
-
-    return block
-
-
 async def get_address(session: AsyncSession, address: str) -> AddressModel | None:
     stmt = select(AddressModel).where(AddressModel.address == address)
     return await session.scalar(stmt)
